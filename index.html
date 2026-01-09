@@ -107,6 +107,9 @@
         left: 100%;
       }
       [data-animate] {
+        opacity: 1;
+      }
+      [data-animate].will-animate {
         opacity: 0;
         transform: translateY(30px);
       }
@@ -890,22 +893,32 @@
         cookieBanner.classList.add("hidden");
       });
 
-      // Scroll Animations
-      const animateOnScroll = () => {
+      // Scroll Animations - activam doar dupa ce pagina e incarcata
+      const initAnimations = () => {
         const elements = document.querySelectorAll("[data-animate]");
-        elements.forEach((el, index) => {
-          const rect = el.getBoundingClientRect();
-          const isVisible = rect.top < window.innerHeight - 100;
-          if (isVisible) {
-            setTimeout(() => {
-              el.classList.add("animated");
-            }, index * 50);
-          }
-        });
+        elements.forEach(el => el.classList.add("will-animate"));
+
+        const animateOnScroll = () => {
+          elements.forEach((el, index) => {
+            const rect = el.getBoundingClientRect();
+            const isVisible = rect.top < window.innerHeight - 50;
+            if (isVisible && !el.classList.contains("animated")) {
+              setTimeout(() => {
+                el.classList.add("animated");
+              }, index * 30);
+            }
+          });
+        };
+
+        window.addEventListener("scroll", animateOnScroll);
+        setTimeout(animateOnScroll, 100);
       };
 
-      window.addEventListener("scroll", animateOnScroll);
-      window.addEventListener("load", animateOnScroll);
+      if (document.readyState === "complete") {
+        initAnimations();
+      } else {
+        window.addEventListener("load", initAnimations);
+      }
 
       // Smooth scroll for anchor links
       document.querySelectorAll('a[href^="#"]').forEach(anchor => {
